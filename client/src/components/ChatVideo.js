@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Peer from "simple-peer";
 
 const ChatVideo = ({ connection }) => {
-  const [users, setUsers] = useState({});
+  const { socket, userName, userIdLocal, userIdRemote, isHost } = connection;
+
   const [stream, setStream] = useState();
   const [receivingCall, setReceivingCall] = useState(false);
   const [caller, setCaller] = useState("");
@@ -14,9 +14,6 @@ const ChatVideo = ({ connection }) => {
   const userVideo = useRef();
   const partnerVideo = useRef();
 
-  const params = useParams();
-  const { socket, userId } = connection;
-
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then(stream => {
@@ -25,24 +22,19 @@ const ChatVideo = ({ connection }) => {
           userVideo.current.srcObject = stream;
         }
       })
-
-    socket.on("allUsers", (users) => {
-      setUsers(users);
-    })
-
-    socket.on("hey", (data) => {
-      setReceivingCall(true);
-      setCaller(data.from);
-      setCallerSignal(data.signal);
-    })
-
-    if (params.session !== undefined) {
-      console.log('useParams', params.session);
-      callPeer(params.session)
-    }
   }, []);
 
+  useEffect(() => {
+    console.log('userIdRemote', userIdRemote);
+    console.log('isHost', isHost);
+    if (userIdRemote !== undefined && !isHost) {
+      console.log('entro');
+      callPeer(userIdRemote)
+    }
+  }, [isHost]);
+
   const callPeer = id => {
+    console.log('call_peer', id);
     const peer = new Peer({
       initiator: true,
       trickle: false,
@@ -50,16 +42,19 @@ const ChatVideo = ({ connection }) => {
     });
 
     peer.on("signal", data => {
-      socket.emit("callUser", { userToCall: id, signalData: data, from: userId })
+      console.log('signal', data);
+      socket.emit("call_user", { userToCall: userIdRemote, signalData: data, from: userIdLocal })
     })
 
     peer.on("stream", stream => {
+      console.log('stream');
       if (partnerVideo.current) {
         partnerVideo.current.srcObject = stream;
       }
     });
 
-    socket.on("callAccepted", signal => {
+    socket.on("call_accept", signal => {
+      console.log('call_accept');
       setCallAccepted(true);
       peer.signal(signal);
     })
@@ -74,40 +69,42 @@ const ChatVideo = ({ connection }) => {
     });
 
     peer.on("signal", data => {
-      socket.emit("acceptCall", { signal: data, to: caller })
+      console.log('signal');
+      socket.emit("call_accept", { signal: data, to: caller })
     })
 
     peer.on("stream", stream => {
+      console.log('stream');
       partnerVideo.current.srcObject = stream;
     });
 
     peer.signal(callerSignal);
   }
 
+  socket.on("call_incoming", (data) => {
+    console.log('call_incoming Out');
+    if (isHost) {
+      console.log('call_incoming', data);
+      setReceivingCall(true);
+      setCaller(data.from);
+      setCallerSignal(data.signal);
+
+      // acceptCall();
+    }
+  })
+
   return (
-    <div>
+    <div className="video-chat">
       {stream ?
         <video className="video-user" playsInline muted ref={userVideo} autoPlay /> :
         null
       }
-
-      <h3>Session Key: {userId}</h3>
 
       {callAccepted ?
         <video className="video-partner" playsInline ref={partnerVideo} autoPlay /> :
         null
       }
 
-      <div>
-        {Object.keys(users).map(key => {
-          if (key === userId) {
-            return null;
-          }
-          return (
-            <button key={key} onClick={() => callPeer(key)}>Call {key}</button>
-          );
-        })}
-      </div>
       <div>
         {receivingCall ?
           <div>

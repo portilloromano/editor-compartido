@@ -1,10 +1,7 @@
 import { createStore } from "redux";
 
 const initialState = {
-  connection: {
-    socket: null,
-    userId: ''
-  }
+  connection: {}
 }
 
 const reducer = (state = initialState, action) => {

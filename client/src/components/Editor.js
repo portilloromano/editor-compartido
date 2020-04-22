@@ -1,14 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import { connect } from 'react-redux';
 import { Menu, Dropdown, Button, Tooltip } from 'antd';
 import GLOBAL from '../global';
+import ModalSearchSelect from './ModalSearchSelect';
 
 const { themes, languages } = GLOBAL;
 
+let issocket = false;
+let decorations = {};
+let contentWidgets = {};
+let versionId = 0;
+let idRemote = '';
+
+let editor;
+let monaco;
+
 const Editor = ({ connection }) => {
-  const [state, setState] = useState({
-    code: '// type your code...',
+  const { socket, userNameLocal, userNameRemote, userIdLocal, userIdRemote, isHost } = connection;
+
+  const [code, setCode] = useState({
+    value: ''
   });
 
   const [theme, setTheme] = useState({
@@ -21,21 +33,136 @@ const Editor = ({ connection }) => {
     value: 'javascript'
   });
 
-  const { socket, userId } = connection;
+  useEffect(() => {
+    if (isHost) {
+      editor.updateOptions({ readOnly: false });
+      socket.emit("filedata", editor.getValue());
+    }
 
-  const editorDidMount = (editor, monaco) => {
+    idRemote = userIdRemote;
+    insertWidget();
+    decorations[userIdLocal] = [];
+  }, [isHost]);
+
+  const editorDidMount = (pEditor, pMonaco) => {
+    editor = pEditor;
+    monaco = pMonaco;
+
     editor.focus();
+
+    editor.onDidChangeModelContent((e) => {
+      if (issocket === false) {
+        e.userIdRemote = idRemote;
+        console.log('emit', e);
+        socket.emit('key', e);
+      } else
+        issocket = false;
+    })
+
+    editor.onDidChangeCursorSelection((e) => {
+      e.userIdRemote = idRemote;
+      socket.emit('selection', e)
+    })
   }
 
-  socket.on("edit", newValue => {
-    console.log('listen: ', newValue);
-    // setState({ code: newValue });
+  const insertWidget = () => {
+    contentWidgets[userIdLocal] = {
+      domNode: null,
+      position: {
+        lineNumber: 0,
+        column: 0
+      },
+      getId: function () {
+        return 'content.' + userIdLocal
+      },
+      getDomNode: function () {
+        if (!this.domNode) {
+          this.domNode = document.createElement('div')
+          this.domNode.innerHTML = userNameRemote
+          this.domNode.style.background = '#EC2928'
+          this.domNode.style.color = '#FFFFFF'
+          this.domNode.style.padding = '0 5px'
+          this.domNode.style.borderRadius = '3px'
+          this.domNode.style.opacity = 0.5
+          this.domNode.style.width = 'max-content'
+        }
+        return this.domNode
+      },
+      getPosition: function () {
+        return {
+          position: this.position,
+          preference: [monaco.editor.ContentWidgetPositionPreference.ABOVE, monaco.editor.ContentWidgetPositionPreference.BELOW]
+        }
+      }
+    }
+  }
+
+  const changeWidgetPosition = (e) => {
+    contentWidgets[userIdLocal].position.lineNumber = e.selection.endLineNumber
+    contentWidgets[userIdLocal].position.column = e.selection.endColumn
+
+    editor.removeContentWidget(contentWidgets[userIdLocal])
+    editor.addContentWidget(contentWidgets[userIdLocal])
+  }
+
+  const changeSelection = (e) => {
+    var selectionArray = []
+    if (e.selection.startColumn === e.selection.endColumn && e.selection.startLineNumber === e.selection.endLineNumber) {
+      e.selection.endColumn++
+      selectionArray.push({
+        range: e.selection,
+        options: {
+          className: 'cursor',
+          hoverMessage: {
+            value: userNameRemote
+          }
+        }
+      })
+
+    } else {
+      selectionArray.push({
+        range: e.selection,
+        options: {
+          className: 'selection',
+          hoverMessage: {
+            value: userNameRemote
+          }
+        }
+      })
+    }
+
+    decorations[userIdLocal] = editor.deltaDecorations(decorations[userIdLocal], selectionArray);
+  }
+
+  const changeText = (e) => {
+    editor.getModel().applyEdits(e.changes)
+  }
+
+  socket.on('resetdata', function (data) {
+    issocket = true
+    editor.setValue(data)
+    editor.updateOptions({ readOnly: false })
+    issocket = false
+  })
+
+  socket.on('selection', function (data) {
+    changeSelection(data)
+    changeWidgetPosition(data)
+  })
+
+  socket.on('key', function (data) {
+    issocket = true
+    if (versionId !== data.versionId) {
+      console.log('key', data);
+      versionId = data.versionId;
+      changeText(data);
+    }
   })
 
   const onChange = (newValue, e) => {
-    setState({ code: newValue });
-    console.log('emit', newValue);
-    socket.emit("editor", newValue);
+    setCode({
+      value: newValue
+    });
   }
 
   const options = {
@@ -77,6 +204,20 @@ const Editor = ({ connection }) => {
     </Menu>
   );
 
+  const changeTheme = (name, value) => {
+    setTheme({
+      name,
+      value
+    });
+  }
+
+  const changeLanguage = (name, value) => {
+    setLanguage({
+      name,
+      value
+    });
+  }
+
   return (
     <div className="editor">
       <MonacoEditor
@@ -84,13 +225,28 @@ const Editor = ({ connection }) => {
         height="100%"
         language={language.value}
         theme={theme.value}
-        value={state.code}
+        value={code.value}
         options={options}
         onChange={onChange}
         editorDidMount={editorDidMount}
       />
+
       <div className="editor-footer">
-        <Dropdown overlay={menuTheme} placement="topRight" trigger={['click']}>
+        <ModalSearchSelect
+          buttonText={theme.name}
+          title="Themes"
+          data={themes}
+          selected={theme}
+          changeFunction={changeTheme}
+        />
+        <ModalSearchSelect
+          buttonText={language.name}
+          title="Languages"
+          data={languages}
+          selected={language}
+          changeFunction={changeLanguage}
+        />
+        {/* <Dropdown overlay={menuTheme} placement="topRight" trigger={['click']}>
           <Tooltip placement="topRight" title="Theme">
             <Button>{theme.name}</Button>
           </Tooltip>
@@ -99,7 +255,7 @@ const Editor = ({ connection }) => {
           <Tooltip placement="topRight" title="Language">
             <Button>{language.value}</Button>
           </Tooltip>
-        </Dropdown>
+        </Dropdown> */}
       </div>
     </div>
   );
