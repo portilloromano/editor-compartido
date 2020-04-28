@@ -12,7 +12,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1",
+    "pem": "^1.14.4",
+    "react-split-pane": "^2.0.3",
     "socket.io": "^2.3.0"
   }
 }

@@ -11,13 +11,12 @@ let issocket = false;
 let decorations = {};
 let contentWidgets = {};
 let versionId = 0;
-let idRemote = '';
 
 let editor;
 let monaco;
 
 const Editor = ({ connection }) => {
-  const { socket, userNameLocal, userNameRemote, userIdLocal, userIdRemote, isHost } = connection;
+  const { socket, userId, userName, roomId, isHost } = connection;
 
   const [code, setCode] = useState({
     value: ''
@@ -39,10 +38,9 @@ const Editor = ({ connection }) => {
       socket.emit("filedata", editor.getValue());
     }
 
-    idRemote = userIdRemote;
     insertWidget();
-    decorations[userIdLocal] = [];
-  }, [isHost]);
+    decorations[userId] = [];
+  }, [editor]);
 
   const editorDidMount = (pEditor, pMonaco) => {
     editor = pEditor;
@@ -52,7 +50,6 @@ const Editor = ({ connection }) => {
 
     editor.onDidChangeModelContent((e) => {
       if (issocket === false) {
-        e.userIdRemote = idRemote;
         console.log('emit', e);
         socket.emit('key', e);
       } else
@@ -60,25 +57,24 @@ const Editor = ({ connection }) => {
     })
 
     editor.onDidChangeCursorSelection((e) => {
-      e.userIdRemote = idRemote;
       socket.emit('selection', e)
     })
   }
 
   const insertWidget = () => {
-    contentWidgets[userIdLocal] = {
+    contentWidgets[userId] = {
       domNode: null,
       position: {
         lineNumber: 0,
         column: 0
       },
       getId: function () {
-        return 'content.' + userIdLocal
+        return 'content.' + userId;
       },
       getDomNode: function () {
         if (!this.domNode) {
           this.domNode = document.createElement('div')
-          this.domNode.innerHTML = userNameRemote
+          this.domNode.innerHTML = ''
           this.domNode.style.background = '#EC2928'
           this.domNode.style.color = '#FFFFFF'
           this.domNode.style.padding = '0 5px'
@@ -98,11 +94,11 @@ const Editor = ({ connection }) => {
   }
 
   const changeWidgetPosition = (e) => {
-    contentWidgets[userIdLocal].position.lineNumber = e.selection.endLineNumber
-    contentWidgets[userIdLocal].position.column = e.selection.endColumn
+    contentWidgets[userId].position.lineNumber = e.selection.endLineNumber
+    contentWidgets[userId].position.column = e.selection.endColumn
 
-    editor.removeContentWidget(contentWidgets[userIdLocal])
-    editor.addContentWidget(contentWidgets[userIdLocal])
+    editor.removeContentWidget(contentWidgets[userId])
+    editor.addContentWidget(contentWidgets[userId])
   }
 
   const changeSelection = (e) => {
@@ -114,7 +110,7 @@ const Editor = ({ connection }) => {
         options: {
           className: 'cursor',
           hoverMessage: {
-            value: userNameRemote
+            value: ''
           }
         }
       })
@@ -125,13 +121,13 @@ const Editor = ({ connection }) => {
         options: {
           className: 'selection',
           hoverMessage: {
-            value: userNameRemote
+            value: ''
           }
         }
       })
     }
 
-    decorations[userIdLocal] = editor.deltaDecorations(decorations[userIdLocal], selectionArray);
+    decorations[userId] = editor.deltaDecorations(decorations[userId], selectionArray);
   }
 
   const changeText = (e) => {
@@ -141,7 +137,7 @@ const Editor = ({ connection }) => {
   socket.on('resetdata', function (data) {
     issocket = true
     editor.setValue(data)
-    editor.updateOptions({ readOnly: false })
+    editor.updateOptions({ readOnly: true })
     issocket = false
   })
 

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Input } from 'antd';
 
 const ChatText = ({ connection }) => {
-  const { socket, userName, userIdLocal, userIdRemote, isHost } = connection;
+  const { socket, userId, userName, roomId, isHost } = connection;
 
   const [typingMessage, setTypingMessage] = useState('');
   const [message, setMessage] = useState('');
@@ -36,8 +36,6 @@ const ChatText = ({ connection }) => {
       const addUsernameTime = {
         message,
         userName,
-        userIdLocal,
-        userIdRemote,
         time: timeFormat
       }
 
@@ -62,7 +60,7 @@ const ChatText = ({ connection }) => {
   const updateTyping = () => {
     if (!typing) {
       typing = true;
-      socket.emit('typing', userIdRemote);
+      socket.emit('typing');
     }
     lastTypingTime = (new Date()).getTime();
 
@@ -70,7 +68,7 @@ const ChatText = ({ connection }) => {
       let typingTimer = (new Date()).getTime();
       let timeDiff = typingTimer - lastTypingTime;
       if (timeDiff >= 2000 && typing) {
-        socket.emit('typing_stop', userIdRemote);
+        socket.emit('typing_stop');
         typing = false;
       }
     }, 2000);
@@ -81,7 +79,7 @@ const ChatText = ({ connection }) => {
   });
 
   socket.on('typing', (data) => {
-    setTypingMessage('Typing...');
+    setTypingMessage(`${data.userName} is typing...`);
   });
 
   socket.on('typing_stop', (data) => {

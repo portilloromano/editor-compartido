@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import Peer from "simple-peer";
 
 const ChatVideo = ({ connection }) => {
-  const { socket, userName, userIdLocal, userIdRemote, isHost } = connection;
+  const { socket, userNameLocal, userNameRemote, userIdLocal, userIdRemote, isHost } = connection;
 
   const [stream, setStream] = useState();
   const [receivingCall, setReceivingCall] = useState(false);

@@ -14,7 +14,7 @@ function App() {
       <BrowserRouter>
         <Switch>
           <Route exact path="/" component={Login} />
-          <Route exact path="/login/:session" component={Login} />
+          <Route exact path="/login/:room" component={Login} />
           <Route exact path="/home" component={Home} />
           <Route exact path="/invalid" component={InvalidConnection} />
           <Route exact path="/rejected" component={JoinRejected} />

@@ -19,6 +19,7 @@ const ButtonCopyToClipboard = ({ tooltip, buttonText, textToCopy }) => {
         <Button
           icon={<ShareAltOutlined />}
           onClick={handleCopy}
+          block
         >
           {buttonText}
         </Button>
