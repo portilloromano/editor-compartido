@@ -14,11 +14,12 @@
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1",
-    "react-split-pane": "^2.0.3",
     "redux": "^4.0.5",
     "shortid": "^2.2.15",
     "simple-peer": "^9.6.2",
-    "socket.io-client": "^2.3.0"
+    "socket.io-client": "^2.3.0",
+    "xterm": "^4.5.0",
+    "xterm-addon-fit": "^0.3.0"
   },
   "scripts": {
     "start": "HTTPS=true react-app-rewired start",

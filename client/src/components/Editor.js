@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { Menu, Dropdown, Button, Tooltip } from 'antd';
 import GLOBAL from '../global';
 import ModalSearchSelect from './ModalSearchSelect';
+import Xterminal from './Xterminal';
 
 const { themes, languages } = GLOBAL;
 
@@ -35,7 +36,7 @@ const Editor = ({ connection }) => {
   useEffect(() => {
     if (isHost) {
       editor.updateOptions({ readOnly: false });
-      socket.emit("filedata", editor.getValue());
+      socket.emit("filedata", editor.getValue(), language);
     }
 
     insertWidget();
@@ -134,25 +135,30 @@ const Editor = ({ connection }) => {
     editor.getModel().applyEdits(e.changes)
   }
 
-  socket.on('resetdata', function (data) {
-    issocket = true
-    editor.setValue(data)
-    editor.updateOptions({ readOnly: true })
-    issocket = false
+  socket.on('resetdata', (data, language) => {
+    issocket = true;
+    editor.setValue(data);
+    editor.updateOptions({ readOnly: true });
+    changeLanguage(language.name, language.value);
+    issocket = false;
   })
 
-  socket.on('selection', function (data) {
+  socket.on('selection', (data) => {
     changeSelection(data)
     changeWidgetPosition(data)
   })
 
-  socket.on('key', function (data) {
+  socket.on('key', (data) => {
     issocket = true
     if (versionId !== data.versionId) {
       console.log('key', data);
       versionId = data.versionId;
       changeText(data);
     }
+  })
+
+  socket.on('change_language', language => {
+    changeLanguage(language.name, language.value);
   })
 
   const onChange = (newValue, e) => {
@@ -212,6 +218,9 @@ const Editor = ({ connection }) => {
       name,
       value
     });
+    if (isHost) {
+      socket.emit('change_language', { name, value });
+    }
   }
 
   return (
@@ -227,6 +236,8 @@ const Editor = ({ connection }) => {
         editorDidMount={editorDidMount}
       />
 
+      <Xterminal />
+
       <div className="editor-footer">
         <ModalSearchSelect
           buttonText={theme.name}
@@ -241,6 +252,7 @@ const Editor = ({ connection }) => {
           data={languages}
           selected={language}
           changeFunction={changeLanguage}
+          disabled={isHost ? false : true}
         />
         {/* <Dropdown overlay={menuTheme} placement="topRight" trigger={['click']}>
           <Tooltip placement="topRight" title="Theme">

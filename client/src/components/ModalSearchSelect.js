@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Button, Table, Tooltip } from 'antd';
 
-const ModalSearchSelect = ({ buttonText, title, data, selected, changeFunction }) => {
+const ModalSearchSelect = ({ buttonText, title, data, selected, changeFunction, disabled = false }) => {
   let tmpSelected = selected;
 
   const [state, setState] = useState(
@@ -63,7 +63,11 @@ const ModalSearchSelect = ({ buttonText, title, data, selected, changeFunction }
   return (
     <div>
       <Tooltip placement="topRight" title={title}>
-        <Button type="primary" onClick={showModal}>
+        <Button
+          type="primary"
+          onClick={showModal}
+          disabled={disabled}
+        >
           {buttonText}
         </Button>
       </Tooltip>

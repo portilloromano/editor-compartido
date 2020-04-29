@@ -1,21 +1,7 @@
-const pem = require('pem');
-const express = require('express');
-const http = require('http');
-const https = require('https');
-const cors = require('cors');
 const socket = require('socket.io');
-const port = process.env.PORT || 8000;
+const CreateTerminal = require('./CreateTerminal');
 
-pem.createCertificate({ days: 1, selfSigned: true }, function (err, keys) {
-  if (err) {
-    throw err
-  }
-
-  const app = express();
-  app.use(cors());
-  // const server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app);
-  const server = http.createServer(app);
-
+module.exports = Socket = (server) => {
   const io = socket(server);
 
   let users = {};
@@ -81,12 +67,16 @@ pem.createCertificate({ days: 1, selfSigned: true }, function (err, keys) {
       socket.broadcast.to(socket.roomId).emit('selection', data);
     })
 
-    socket.on('filedata', data => {
-      socket.broadcast.to(socket.roomId).emit('resetdata', data)
+    socket.on('filedata', (data, language) => {
+      socket.broadcast.to(socket.roomId).emit('resetdata', data, language);
     })
 
     socket.on('key', data => {
-      socket.broadcast.to(socket.roomId).emit('key', data)
+      socket.broadcast.to(socket.roomId).emit('key', data);
+    })
+
+    socket.on('change_language', language => {
+      socket.broadcast.to(socket.roomId).emit('change_language', language);
     })
 
     ///// Chat Text /////
@@ -102,7 +92,16 @@ pem.createCertificate({ days: 1, selfSigned: true }, function (err, keys) {
     socket.on('typing_stop', userIdRemote => {
       socket.broadcast.to(socket.roomId).emit('typing_stop', { userName: socket.userName });
     });
-  });
 
-  server.listen(port, () => console.log(`Server is running on port ${port}.`));
-});
+    ///// Terminal /////
+
+    socket.on('create_terminal', () => {
+      CreateTerminal({
+        roomId: socket.roomId,
+        ip: '127.0.0.1',
+        username: '',
+        password: ''
+      }, socket, io);
+    });
+  });
+}

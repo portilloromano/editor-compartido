@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { Tabs, Badge } from 'antd';
-import { UserOutlined, MessageOutlined } from '@ant-design/icons';
+import { UserOutlined, MessageOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import ChatVideo from './ChatVideo';
 import ChatText from './ChatText';
 
 const { TabPane } = Tabs;
@@ -37,6 +38,18 @@ const Panel = ({ connection }) => {
       <Tabs onChange={callback} type="card">
         <TabPane
           key="1"
+          forceRender={true}
+          tab={
+            <span>
+              <VideoCameraOutlined />
+            </span>
+          }
+        >
+          {/* <ChatVideo /> */}
+        </TabPane>
+        <TabPane
+          key="2"
+          forceRender={true}
           tab={
             <span>
               <MessageOutlined />
@@ -46,7 +59,8 @@ const Panel = ({ connection }) => {
           <ChatText />
         </TabPane>
         <TabPane
-          key="2"
+          key="3"
+          forceRender={true}
           tab={
             <span>
               <UserOutlined />
@@ -59,7 +73,6 @@ const Panel = ({ connection }) => {
               <li key={index}>{user.userName}</li>)}
           </ul>
         </TabPane>
-
       </Tabs>
     </div>
   );
