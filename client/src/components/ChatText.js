@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Input } from 'antd';
 
 const ChatText = ({ connection }) => {
-  const { socket, userId, userName, roomId, isHost } = connection;
+  const { socket, userName } = connection;
 
   const [typingMessage, setTypingMessage] = useState('');
   const [message, setMessage] = useState('');

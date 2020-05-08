@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit';
 
-const Xterminal = ({ connection }) => {
-  const { socket, userId, userName, roomId, isHost } = connection;
+const Xterminal = ({ connection, resize, setResize }) => {
+  const { socket, roomId, isHost } = connection;
 
   const term = new Terminal({ cursorBlink: true });
   const fitAddon = new FitAddon();
@@ -17,6 +17,15 @@ const Xterminal = ({ connection }) => {
     if (isHost) socket.emit('create_terminal');
   }, []);
 
+  useEffect(() => {
+    fitAddon.fit();
+    console.log('fitAddon');
+    setResize({
+      ...resize,
+      xterm: false
+    });
+  }, [resize.xterm]);
+
   if (isHost) {
     term.onData(data => {
       socket.emit(roomId, data);
@@ -28,14 +37,22 @@ const Xterminal = ({ connection }) => {
   });
 
   return (
-    <div className="terminal">
-      <div id="terminal"></div>
-    </div>
+    <div id="terminal"></div>
   );
 }
 
 const mapStateToProps = state => ({
   connection: state.connection,
+  resize: state.resize,
 });
 
-export default connect(mapStateToProps, null)(Xterminal);
+const mapDispatchToTops = dispatch => ({
+  setResize(resize) {
+    dispatch({
+      type: 'RESIZE',
+      resize
+    })
+  }
+});
+
+export default connect(mapStateToProps, mapDispatchToTops)(Xterminal);

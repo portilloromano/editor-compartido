@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import { connect } from 'react-redux';
-import { Menu, Dropdown, Button, Tooltip } from 'antd';
-import GLOBAL from '../global';
-import ModalSearchSelect from './ModalSearchSelect';
-import Xterminal from './Xterminal';
-
-const { themes, languages } = GLOBAL;
 
 let issocket = false;
 let decorations = {};
@@ -16,8 +10,8 @@ let versionId = 0;
 let editor;
 let monaco;
 
-const Editor = ({ connection }) => {
-  const { socket, userId, userName, roomId, isHost } = connection;
+const Editor = ({ connection, editorConfig, setEditorConfig }) => {
+  const { socket, userId, isHost } = connection;
 
   const [code, setCode] = useState({
     value: ''
@@ -34,6 +28,20 @@ const Editor = ({ connection }) => {
   });
 
   useEffect(() => {
+    setEditorConfig({
+      ...editorConfig,
+      theme: {
+        name: theme.name,
+        value: theme.value
+      },
+      language: {
+        name: language.name,
+        value: language.value
+      }
+    });
+  }, []);
+
+  useEffect(() => {
     if (isHost) {
       editor.updateOptions({ readOnly: false });
       socket.emit("filedata", editor.getValue(), language);
@@ -42,6 +50,33 @@ const Editor = ({ connection }) => {
     insertWidget();
     decorations[userId] = [];
   }, [editor]);
+
+  useEffect(() => {
+    setTheme({
+      name: editorConfig.theme.name,
+      value: editorConfig.theme.value
+    });
+  }, [editorConfig.theme]);
+
+  useEffect(() => {
+    setLanguage({
+      name: editorConfig.language.name,
+      value: editorConfig.language.value
+    });
+  }, [editorConfig.language]);
+
+  const changeLanguage = (name, value) => {
+    setEditorConfig({
+      ...editorConfig,
+      language: {
+        name,
+        value
+      }
+    });
+    if (isHost) {
+      socket.emit('change_language', { name, value });
+    }
+  }
 
   const editorDidMount = (pEditor, pMonaco) => {
     editor = pEditor;
@@ -172,57 +207,6 @@ const Editor = ({ connection }) => {
     automaticLayout: true
   };
 
-  const handleMenuThemeClick = (e) => {
-    setTheme({
-      name: themes[e.item.props.index].name,
-      value: themes[e.item.props.index].value
-    });
-  }
-
-  const menuTheme = (
-    <Menu onClick={handleMenuThemeClick}>
-      {themes.map((theme, index) =>
-        <Menu.Item key={index}>
-          {theme.name}
-        </Menu.Item>
-      )}
-    </Menu>
-  );
-
-  const handleMenuLanguageClick = (e) => {
-    setLanguage({
-      name: languages[e.item.props.index].name,
-      value: languages[e.item.props.index].value
-    });
-  }
-
-  const menuLanguage = (
-    <Menu onClick={handleMenuLanguageClick}>
-      {languages.map((language, index) =>
-        <Menu.Item key={index}>
-          {language.value}
-        </Menu.Item>
-      )}
-    </Menu>
-  );
-
-  const changeTheme = (name, value) => {
-    setTheme({
-      name,
-      value
-    });
-  }
-
-  const changeLanguage = (name, value) => {
-    setLanguage({
-      name,
-      value
-    });
-    if (isHost) {
-      socket.emit('change_language', { name, value });
-    }
-  }
-
   return (
     <div className="editor">
       <MonacoEditor
@@ -235,42 +219,22 @@ const Editor = ({ connection }) => {
         onChange={onChange}
         editorDidMount={editorDidMount}
       />
-
-      <Xterminal />
-
-      <div className="editor-footer">
-        <ModalSearchSelect
-          buttonText={theme.name}
-          title="Themes"
-          data={themes}
-          selected={theme}
-          changeFunction={changeTheme}
-        />
-        <ModalSearchSelect
-          buttonText={language.name}
-          title="Languages"
-          data={languages}
-          selected={language}
-          changeFunction={changeLanguage}
-          disabled={isHost ? false : true}
-        />
-        {/* <Dropdown overlay={menuTheme} placement="topRight" trigger={['click']}>
-          <Tooltip placement="topRight" title="Theme">
-            <Button>{theme.name}</Button>
-          </Tooltip>
-        </Dropdown>
-        <Dropdown overlay={menuLanguage} placement="topRight" trigger={['click']}>
-          <Tooltip placement="topRight" title="Language">
-            <Button>{language.value}</Button>
-          </Tooltip>
-        </Dropdown> */}
-      </div>
     </div>
   );
 }
 
 const mapStateToProps = state => ({
-  connection: state.connection
+  connection: state.connection,
+  editorConfig: state.editorConfig
 });
 
-export default connect(mapStateToProps)(Editor);
+const mapDispatchToTops = dispatch => ({
+  setEditorConfig(editorConfig) {
+    dispatch({
+      type: 'EDITOR',
+      editorConfig
+    })
+  }
+});
+
+export default connect(mapStateToProps, mapDispatchToTops)(Editor);

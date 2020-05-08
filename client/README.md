@@ -1,5 +1,9 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Config SSH server
+
+Configure in the 'Terminal' section at the end of the file modules/Socket.js
+
 ## Available Scripts
 
 In the project directory, you can run:

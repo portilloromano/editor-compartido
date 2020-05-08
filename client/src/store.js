@@ -1,7 +1,12 @@
 import { createStore } from "redux";
 
 const initialState = {
-  connection: {}
+  connection: {},
+  resize: {},
+  editorConfig: {
+    theme: { name: '', value: '' },
+    language: { name: '', value: '' }
+  },
 }
 
 const reducer = (state = initialState, action) => {
@@ -10,6 +15,16 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         connection: action.connection
+      }
+    case 'RESIZE':
+      return {
+        ...state,
+        resize: action.resize
+      }
+    case 'EDITOR':
+      return {
+        ...state,
+        editorConfig: action.editorConfig
       }
     default:
       return state;

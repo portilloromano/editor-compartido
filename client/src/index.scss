@@ -23,133 +23,158 @@
 }
 
 .content {
-  display: flex;
-  justify-content: space-between;
+  height: 100vh;
+  width: 100%;
+  // display: flex;
+  // justify-content: space-between;
+  // margin-bottom: 30px;
 
-  ///// Editor /////
+  .wrapper {
+    height: calc(100% - 30px);
 
-  .editor {
-    width: 75%;
-    height: calc(100vh - 280px);
-    border-right: 1px solid #dbdbdb;
+    ///// Editor /////
 
-    .selection {
-      background-color: #ec2928;
-      opacity: 0.3;
-    }
-
-    .cursor {
-      background: #ec2928;
-      width: 2px;
-    }
-
-    .terminal {
+    .editor {
       width: 100%;
-      height: 250px;
+      // height: calc(100vh - 280px);
+      border-right: 1px solid #dbdbdb;
+      height: 100%;
 
-      .xterm-cursor-layer {
-        // background-color: rgba($color: #1e1e1e, $alpha: 0.5);
-      }
-      .xterm-viewport {
-        // background-color: #1e1e1e;
+      // .selection {
+      //   background-color: #ec2928;
+      //   opacity: 0.3;
+      // }
+
+      // .cursor {
+      //   background: #ec2928;
+      //   width: 2px;
+      // }
+
+      #terminal {
+        width: 100%;
+
+        // .terminal.xterm,
+        // .xterm-screen,
+        // .xterm-helpers,
+        // .xterm-text-layer,
+        // .xterm-text-layer,
+        // .xterm-text-layer,
+        // .xterm-viewport,
+        // .xterm-cursor-layer {
+        //   width: 100% !important;
+        //   height: 100% !important;
+        //   margin-bottom: 30px;
+        // }
+
+        .xterm-cursor-layer {
+          // background-color: rgba($color: #1e1e1e, $alpha: 0.5);
+        }
+        .xterm-viewport {
+          // background-color: #1e1e1e;
+        }
       }
     }
 
-    .editor-footer {
+    .chat {
       width: 100%;
-      height: 30px;
-      background-color: #1e1e1e;
-      border-top: 1px solid #393939;
-      display: flex;
-      justify-content: flex-end;
+      margin: 0.5rem;
 
       button {
-        border: none;
-        color: rgba($color: #ffffff, $alpha: 0.7);
-        background-color: #1e1e1e;
-        height: 29px;
-        margin-right: 1rem;
-        padding: 4px 0;
+        margin-bottom: 0.5rem;
+      }
+
+      ///// Chat Video /////
+
+      .video-chat {
+        .video-user {
+          width: 100%;
+          margin-bottom: 0.5rem;
+        }
+
+        .video-partner {
+          width: 100%;
+          margin: 0.5rem 0;
+        }
+      }
+
+      ///// Chat Text /////
+
+      .chat-content {
+        width: 100%;
+        height: 100%;
+
+        #messages {
+          height: 300px;
+          border: 1px solid #d9d9d9;
+          overflow-y: auto;
+          overflow-x: hidden;
+          ul {
+            padding: 0.2rem;
+            li {
+              display: flex;
+              flex-direction: column;
+
+              #username-time {
+                display: flex;
+                justify-content: space-between;
+                font-size: 0.7rem;
+                line-height: 0.7rem;
+
+                .blue {
+                  color: blue;
+                }
+
+                .red {
+                  color: red;
+                }
+
+                #username {
+                }
+
+                #time {
+                }
+              }
+
+              #message {
+                margin-bottom: 0.5rem;
+                font-size: 1rem;
+                line-height: 1.1rem;
+              }
+            }
+          }
+        }
+
+        #typing {
+          display: block;
+          text-align: center;
+          color: #cbc1cb;
+          font-size: 0.7rem;
+          line-height: 0.7rem;
+        }
       }
     }
   }
 
-  .chat {
-    width: 25%;
-    margin: 0.5rem;
+  ///// Footer /////
+
+  .footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    height: 30px;
+    width: 100%;
+    background-color: #1e1e1e;
+    border-top: 1px solid #393939;
+    display: flex;
+    justify-content: flex-end;
 
     button {
-      margin-bottom: 0.5rem;
-    }
-
-    ///// Chat Video /////
-
-    .video-chat {
-      .video-user {
-        width: 100%;
-        margin-bottom: 0.5rem;
-      }
-
-      .video-partner {
-        width: 100%;
-        margin: 0.5rem 0;
-      }
-    }
-
-    ///// Chat Text /////
-
-    .chat-content {
-      width: 100%;
-      height: 100%;
-
-      #messages {
-        height: 300px;
-        border: 1px solid #d9d9d9;
-        overflow-y: auto;
-        overflow-x: hidden;
-        ul {
-          padding: 0.2rem;
-          li {
-            display: flex;
-            flex-direction: column;
-
-            #username-time {
-              display: flex;
-              justify-content: space-between;
-              font-size: 0.7rem;
-              line-height: 0.7rem;
-
-              .blue {
-                color: blue;
-              }
-
-              .red {
-                color: red;
-              }
-
-              #username {
-              }
-
-              #time {
-              }
-            }
-
-            #message {
-              margin-bottom: 0.5rem;
-              font-size: 1rem;
-              line-height: 1.1rem;
-            }
-          }
-        }
-      }
-
-      #typing {
-        display: block;
-        text-align: center;
-        color: #cbc1cb;
-        font-size: 0.7rem;
-        line-height: 0.7rem;
-      }
+      border: none;
+      color: rgba($color: #ffffff, $alpha: 0.7);
+      background-color: #1e1e1e;
+      height: 29px;
+      margin-right: 1rem;
+      padding: 4px 0;
     }
   }
 }

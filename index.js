@@ -4,6 +4,7 @@ const http = require('http');
 const https = require('https');
 const cors = require('cors');
 const Socket = require('./modules/Socket');
+const fileManagmentRouter = require('./routes/fileManagment');
 
 const port = process.env.PORT || 8000;
 
@@ -13,9 +14,12 @@ pem.createCertificate({ days: 1, selfSigned: true }, function (err, keys) {
   }
 
   const app = express();
-  app.use(cors());
+
   // const server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app);
   const server = http.createServer(app);
+
+  app.use(cors());
+  app.use('/filemanagment', fileManagmentRouter);
 
   Socket(server);
 

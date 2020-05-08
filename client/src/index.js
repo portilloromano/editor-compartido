@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import 'antd/dist/antd.css';
-import './xterm.css';
+import './css/xterm.css';
+import './css/split.css';
 import './index.scss';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
