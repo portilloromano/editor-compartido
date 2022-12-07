@@ -13,7 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.17.1",
+    "express": "^4.18.2",
     "pem": "^1.14.4",
     "socket.io": "^2.3.0",
     "ssh2": "^0.8.9",
